@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-import argparse
-from dataclasses import dataclass
-from pathlib import Path
 import re
+import sys
+import argparse
+from pathlib import Path
+from dataclasses import dataclass
 from typing import Final, Iterator
 
 import nltk
-from nltk.tokenize import sent_tokenize, word_tokenize
 import pymorphy3
 from pymorphy3.analyzer import Parse
+from nltk.tokenize import sent_tokenize, word_tokenize
 
 
 CYRILLIC_WORD_PATTERN: Final[re.Pattern[str]] = re.compile(
@@ -18,15 +19,18 @@ CYRILLIC_WORD_PATTERN: Final[re.Pattern[str]] = re.compile(
 
 
 def ensure_nltk_resources() -> None:
-    """Гарантирует загрузку необходимых словарей и моделей NLTK"""
+    """Гарантирует загрузку необходимых моделей токенизации NLTK"""
     for resource in ("punkt", "punkt_tab"):
         try:
             nltk.data.find(f"tokenizers/{resource}")
         except LookupError:
             try:
                 nltk.download(resource, quiet=True)
-            except Exception:
-                pass
+            except Exception as err:
+                print(
+                    f"Не удалось скачать NLTK {resource}: {err}",
+                    file=sys.stderr,
+                )
 
 
 @dataclass(frozen=True, slots=True)
